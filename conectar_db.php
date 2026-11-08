@@ -1,5 +1,7 @@
 <?php
 // Archivo de conexión reutilizable
+
+// Declaro constantes con los datos de mi BD
 const HOSTNAME = "localhost";
 const DATABASE = "clientes";
 const USER_DB = "root";

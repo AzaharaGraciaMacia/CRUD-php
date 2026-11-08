@@ -1,7 +1,8 @@
 <?php
 require_once "conectar_db.php";
 require_once "funcionesValidacion.php";
-
+session_start();
+// Declaración de variables que se usarán
 $DNI = "";
 $nombre = "";
 $email = "";
@@ -11,6 +12,7 @@ $provincia = "";
 $telefono = "";
 $errores = [];
 
+// Función para comprobar que el cliente no existe en la BD antes de insertar
 function comprobarCliente($DNI): string
 {
     try {
@@ -29,6 +31,8 @@ function comprobarCliente($DNI): string
         die("Ocurrió un error al recuperar datos de la base de datos.");
     }
 }
+
+// Función con la query para insertar los datos en la BD
 function insertarCliente($DNI, $nombre, $email, $direccion, $localidad, $provincia, $telefono): void
 {
     try {
@@ -37,14 +41,15 @@ function insertarCliente($DNI, $nombre, $email, $direccion, $localidad, $provinc
         VALUES (:dni, :nombre, :direccion, :localidad, :provincia, :telefono, :email)";
         $stmt = $con->prepare($sql);
         $stmt->execute([":dni" => $DNI, ":nombre" => $nombre, ":direccion" => $direccion,
-                ":localidad" => $localidad, ":provincia" => $provincia, ":telefono" => $telefono, ":email" => $email
-        ]);
+                ":localidad" => $localidad, ":provincia" => $provincia, ":telefono" => $telefono, ":email" => $email]);
+        $_SESSION["mensaje"] = "Cliente creado correctamente.";
     } catch (PDOException $e) {
         error_log("Error PDO: " . $e->getMessage());
         die("Ocurrió un error al insertar en la base de datos.");
     }
 }
 
+// Recibe los datos del formulario, comprueba que no hay errores e inserta los datos. Después devuelve a la página principal.
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $DNI = obtenerDato("DNI");
     $nombre = obtenerDato("nombre");
@@ -68,16 +73,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
     if (empty($errores)) {
-        $_SESSION["nuevoCliente"] = [
-                "DNI" => $DNI,
-                "nombre" => $nombre,
-                "email" => $email,
-                "direccion" => $direccion,
-                "localidad" => $localidad,
-                "provincia" => $provincia,
-                "telefono" => $telefono
-        ];
         insertarCliente($DNI, $nombre, $email, $direccion, $localidad, $provincia, $telefono);
+        header("Location: index.php");
+        exit;
     }
 }
 ?>
@@ -86,46 +84,92 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Formulario de Alta</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<div class="container-fluid text-center">
 <h1>Formulario de alta de cliente</h1>
 <br>
-
+</div>
+<div class="container-fluid text-center">
 <?php if (!empty($errores)) :?>
-    <h4>Se han encontrado los siguientes errores:</h4>
+    <h4 class="text-danger">Se han encontrado los siguientes errores:</h4>
 <?php foreach ($errores as $error) : ?>
         <ul>
-            <li><?= $error ?></li>
+            <li class="text-danger" style="list-style: none">■■ <?= $error ?></li>
         </ul>
 <?php endforeach ?>
 <?php endif ?>
-
-<h3>NUEVO CLIENTE - FORMULARIO DE REGISTRO</h3>
-<div>
-    <form method="post" action="clientenuevo.php">
+</div>
+<div class="container-fluid text-center">
+<h4 style="color: dodgerblue">NUEVO CLIENTE - FORMULARIO DE REGISTRO</h4>
+</div>
+<div class="d-flex justify-content-around">
+    <form method="post" action="clientenuevo.php" class="form">
+        <table class="table">
+        <tbody>
+        <tr>
+            <td>
         <label for="DNI">DNI de cliente (*):</label>
+            </td>
+            <td>
         <input type="text" name="DNI" id= "DNI" value="<?= $DNI ?>" placeholder="Ej: 12345678Z">
-        <br>
+            </td>
+        </tr>
+        <tr>
+            <td>
         <label for="nombre">Nombre Completo (*):</label>
+            </td>
+            <td>
         <input type="text" name="nombre" id="nombre" value="<?= $nombre ?>" placeholder="Ej: Azahara Gracia Maciá">
-        <br>
+            </td>
+        </tr>
+        <tr>
+            <td>
         <label for="email">Correo electrónico (*):</label>
+            </td>
+            <td>
         <input type="email" name="email" id="email" value="<?= $email ?>" placeholder="Ej: azagramac@alu.edu.gva.es">
-        <br>
+            </td>
+        </tr>
+        <tr>
+            <td>
         <label for="direccion">Dirección:</label>
+            </td>
+            <td>
         <input type="text" name="direccion" id="direccion" value="<?= $direccion ?>" placeholder="Ej: C/Concepción Arenal">
-        <br>
+            </td>
+        </tr>
+        <tr>
+            <td>
         <label for="localidad">Localidad:</label>
+            </td>
+            <td>
         <input type="text" name="localidad" id="localidad" value="<?= $localidad ?>" placeholder="Ej: Elche">
-        <br>
+            </td>
+        </tr>
+        <tr>
+            <td>
         <label for="provincia">Provincia:</label>
+            </td>
+            <td>
         <input type="text" name="provincia" id="provincia" value="<?= $provincia ?>" placeholder="Ej: Alicante">
-        <br>
+            </td>
+        </tr>
+        <tr>
+            <td>
         <label for="telefono">Teléfono:</label>
+            </td>
+            <td>
         <input type="text" name="telefono" id="telefono" value="<?= $telefono ?>" placeholder="Ej: 695439149">
-        <br>
-        <button type="submit">Guardar Cliente</button>
-        <button type="reset"><a style="text-decoration: none; color: black" href="index.php">Cancelar y Volver</a></button>
+            </td>
+        </tr>
+        </tbody>
+        </table>
+        <div class="container-fluid text-center">
+            <button type="submit" style="color: green; border: none; background-color: transparent"><b>[■ Guardar Cliente]</b></button>
+            <button type="reset" style="border: none; background-color: transparent"><a style="color: gray" href="index.php">[■■ Cancelar y Volver]</a></button>
+        </div>
     </form>
 </div>
 </body>
