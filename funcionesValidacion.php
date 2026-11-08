@@ -1,5 +1,11 @@
 <?php
+
+// Constante para validación de DNI
 const LETRAS_CONTROL = "TRWAGMYFPDXBNJZSQVHLCKE";
+
+// Función para validar el DNI, pone la letra en mayúscula y comprueba que tiene patrón de 8 dígitos + 1 letra
+// Después separa en dos cadenas el número y la letra, divide el número por 23 y busca con el resto la posición dentro de las letras de control
+// Si la letra del DNI coincide con la letra en la posición del resto, el DNI es válido.
 function validarDNI($DNI): bool
 {
     if ($DNI === "") return false;
@@ -13,6 +19,8 @@ function validarDNI($DNI): bool
         $letraEsperada = substr(LETRAS_CONTROL,$numeroDNI % 23,1);
         return $letra === $letraEsperada;
 }
+
+// Valida que el email sea correcto (algo@algo.algo)
 function validarEmail($email): bool
 {
     return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
@@ -28,7 +36,6 @@ function textoProtegido($texto): string
 function obtenerDato($dato): string
 {
     $valor = textoProtegido($_POST[$dato]) ?? "";
-
     return trim($valor);
 }
 ?>
