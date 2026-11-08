@@ -63,10 +63,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $localidad = obtenerDato("localidad");
     $provincia = obtenerDato("provincia");
     $telefono = obtenerDato("telefono");
-
+if ($email === "" || $nombre === ""){
+    $errores[] = "Debe rellenar todos los campos obligatorios (nombre, email)";
+} else {
     if (!validarEmail($email)) {
         $errores[] = "Email no válido";
     }
+}
     if (empty($errores)) {
         editarCliente($DNI, $nombre, $email, $direccion, $localidad, $provincia, $telefono);
         header("Location: index.php");
